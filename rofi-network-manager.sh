@@ -1,4 +1,5 @@
 #!/bin/bash
+#
 # Default Values
 LOCATION=0
 QRCODE_LOCATION=$LOCATION
@@ -8,7 +9,8 @@ NOTIFICATIONS="off"
 QRCODE_DIR="/tmp/"
 WIDTH_FIX_MAIN=1
 WIDTH_FIX_STATUS=10
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+#DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CONFIG0="${XDG_CONFIG_HOME:-$HOME/.config}/rofi/rofi-network-manager.conf"
 PASSWORD_ENTER="if connection is stored,hit enter/esc."
 WIRELESS_INTERFACES=($(nmcli device | awk '$2=="wifi" {print $1}'))
 WIRELESS_INTERFACES_PRODUCT=()
@@ -24,8 +26,11 @@ SIGNAL_STRENGTH_3="123"
 SIGNAL_STRENGTH_4="1234"
 VPN_PATTERN='(wireguard|vpn)'
 function initialization() {
-	source "$DIR/rofi-network-manager.conf" || source "${XDG_CONFIG_HOME:-$HOME/.config}/rofi/rofi-network-manager.conf"
-	{ [[ -f "$DIR/rofi-network-manager.rasi" ]] && RASI_DIR="$DIR/rofi-network-manager.rasi"; } || { [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/rofi/rofi-network-manager.rasi" ]] && RASI_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/rofi/rofi-network-manager.rasi"; } || exit
+	#source "$DIR/rofi-network-manager.conf" || source "${XDG_CONFIG_HOME:-$HOME/.config}/rofi/rofi-network-manager.conf"
+	#{ [[ -f "$DIR/rofi-network-manager.rasi" ]] && RASI_DIR="$DIR/rofi-network-manager.rasi"; } || { [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/rofi/rofi-network-manager.rasi" ]] && RASI_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/rofi/rofi-network-manager.rasi"; } || exit
+	test -r $CONFIG0 || { echo "$CONFIG0 doesn't exist";
+		if [ "$1" = "stop" ]; then exit 0;
+		else exit 6; fi; }
 	for i in "${WIRELESS_INTERFACES[@]}"; do WIRELESS_INTERFACES_PRODUCT+=("$(nmcli -f general.product device show "$i" | awk '{print $2}')"); done
 	for i in "${WIRED_INTERFACES[@]}"; do WIRED_INTERFACES_PRODUCT+=("$(nmcli -f general.product device show "$i" | awk '{print $2}')"); done
 	wireless_interface_state && ethernet_interface_state
